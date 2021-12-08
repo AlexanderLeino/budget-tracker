@@ -1,5 +1,10 @@
 let transactions = [];
 let myChart;
+//Inorder for us to be able to insert multiple transactions into the db after being in offline we need to be able to store each value. In order for us to do that we would need to store them into an array. 
+let allOfflineTransactions = []
+//We will be using IndexDb to store values to the users offline browers so when they are reconnected to the internet then those transcations will be added to the ledger. 
+//For more informaton about indexDB please refer to the IndexDB MDN Documentation here https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB 
+
 
 fetch("/api/transaction")
   .then(response => {
@@ -78,12 +83,15 @@ function populateChart() {
   });
 }
 
+//This function is capturing the values inputed into the browser
+
 function sendTransaction(isAdding) {
   let nameEl = document.querySelector("#t-name");
   let amountEl = document.querySelector("#t-amount");
   let errorEl = document.querySelector(".form .error");
 
   // validate form
+  //This is ensuring each transaction has a name and a value tied too it. 
   if (nameEl.value === "" || amountEl.value === "") {
     errorEl.textContent = "Missing Information";
     return;
@@ -93,6 +101,7 @@ function sendTransaction(isAdding) {
   }
 
   // create record
+  //If the transaction has a name and valeu then those values are stored into an object name transaction. 
   let transaction = {
     name: nameEl.value,
     value: amountEl.value,
@@ -143,6 +152,30 @@ function sendTransaction(isAdding) {
     amountEl.value = "";
   });
 }
+
+// This is called if line 146-148 are fired due to an error happening in the fetch request aka if the browser isnt connected too the internet.  
+function saveRecord () {
+  //We firstly need to ensure the browser the user is using supports indexdb
+  if(!window.indexedDB) {
+    console.log('Your browser doesnt currently support IndexDb')
+      return
+  }
+    let db
+    let request = window.indexedDB.open('offlineLedger', 1)
+    
+    request.onerror = event => {
+      console.log(event.target.errorCode)
+    }
+
+    request.onupgradeneeded = event => {
+      const db = event.target.result
+      db.createObjectStore('savedTransactions')
+    }
+
+    
+}
+
+
 
 document.querySelector("#add-btn").onclick = function() {
   sendTransaction(true);
