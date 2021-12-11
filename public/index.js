@@ -1,11 +1,9 @@
 
 let transactions = [];
 let myChart;
-//Inorder for us to be able to insert multiple transactions into the db after being in offline we need to be able to store each value. In order for us to do that we would need to store them into an array. 
-let allOfflineTransactions = []
-//We will be using IndexDb to store values to the users offline browers so when they are reconnected to the internet then those transcations will be added to the ledger. 
-//For more informaton about indexDB please refer to the IndexDB MDN Documentation here https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB 
 
+let newTransaction 
+//Inorder for us to be able to insert multiple transactions into the db after being in offline we need to be able to store each value. In order for us to do that we would need to store them into an array. 
 fetch("/api/transaction")
   .then(response => {
     return response.json();
@@ -155,17 +153,8 @@ function sendTransaction(isAdding) {
 
 // This is called if line 146-148 are fired due to an error happening in the fetch request aka if the browser isnt connected too the internet.  
 function saveRecord (transaction) {
-    // Example value being passed through this function
-    // { name: "Deposit", 
-    //   value: "1000", 
-    //   date: "2021-12-08T18:27:20.630Z" 
-    // }
+      newTransaction = transaction
 
-  //With the object we need to push it to our empty globally declared array allOfflineTransactions so then we can insert them later.
-  allOfflineTransactions.push(transaction)
-  console.log(allOfflineTransactions)
-  //With this parameter we are receiving a data object that looks like
-  //We firstly need to ensure the browser the user is using supports indexdb
   if(!window.indexedDB) {
     console.log('Your browser doesnt currently support IndexDb')
       return
@@ -200,12 +189,8 @@ function saveRecord (transaction) {
         //Although we currently only have one object store we have to still have to create an instance calling the object store.
         const objectStore = transaction.objectStore('savedTransactions')
 
-        allOfflineTransactions.forEach(savedTransaction => {
-            const addRequest = objectStore.add(savedTransaction)
-            addRequest.onsuccess = event => console.log(`${savedTransaction.name} was added to indexDB`)
-
-        })
-
+            const addRequest = objectStore.add(newTransaction)
+            addRequest.onsuccess = event => console.log(`${newTransaction.name} was added to indexDB`)
 
     }
 
