@@ -208,7 +208,19 @@ if(!window.indexedDB) {
 
 function checkIndexDb(){
   if(navigator.onLine){
-    console.log('Checking IndexDB')
+    console.log('Check indexDB')
+    let request = window.indexedDB.open('offlineLedger', 1)
+    console.log(request)
+    request.onerror = function (event){
+      console.log(event)
+    }
+    request.onsuccess = function(event){
+      db = event.target.result
+      let transaction = db.transaction('savedTransactions', 'readwrite')
+      let objectStore = transaction.objectStore("savedTransactions")
+      const getRequest = objectStore.getAll()
+      getRequest.onsuccess = event => console.log(event.target.result)
+    }
   }
   return
 }
