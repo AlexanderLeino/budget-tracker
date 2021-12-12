@@ -1,6 +1,8 @@
 
 let transactions = [];
 let myChart;
+let db
+let request
 
 let newTransaction 
 //Inorder for us to be able to insert multiple transactions into the db after being in offline we need to be able to store each value. In order for us to do that we would need to store them into an array. 
@@ -120,6 +122,7 @@ function sendTransaction(isAdding) {
   populateTotal();
   
   // also send to server
+  
   fetch("/api/transaction", {
     method: "POST",
     body: JSON.stringify(transaction),
@@ -143,6 +146,8 @@ function sendTransaction(isAdding) {
   })
   .catch(err => {
     // fetch failed, so save in indexed db
+    console.log('Why is this firing')
+    console.log(err)
     saveRecord(transaction);
 
     // clear form
@@ -153,46 +158,50 @@ function sendTransaction(isAdding) {
 
 // This is called if line 146-148 are fired due to an error happening in the fetch request aka if the browser isnt connected too the internet.  
 function saveRecord (transaction) {
-      newTransaction = transaction
-
-  if(!window.indexedDB) {
-    console.log('Your browser doesnt currently support IndexDb')
-      return
-  }
-    let db
-    let request = window.indexedDB.open('offlineLedger', 1)
+  if(!navigator.onLine){
     
-    request.onerror = event => {
-      console.log(event.target.errorCode)
-    }
+    newTransaction = transaction
 
-    //This is where any options for the db is implemented
-    request.onupgradeneeded = event => {
-      const db = event.target.result
-      db.createObjectStore('savedTransactions', {
-        keyPath: 'id', autoIncrement: true,
-      })
-    }
+if(!window.indexedDB) {
+  console.log('Your browser doesnt currently support IndexDb')
+    return
+}
+  let db
+  let request = window.indexedDB.open('offlineLedger', 1)
+  
+  request.onerror = event => {
+    console.log(event.target.errorCode)
+  }
 
-    request.onsuccess = event => {
-        db = event.target.result
-        //If a successful DOM event occurs then we want to access or objectStore via our db object so then we can start adding and deleting data.
-        let transaction = db.transaction('savedTransactions', "readwrite")
-        // You can access multiple objectStores in one transaction but since we are only worried about storing the transactions for one use we will just use one instead of passing multiple through using an array like they do in the indexDB documentation. 
-        //We dont have to pass anything through the second parameter but if we dont then it will default to a read only transaciton which would prevent us from manipulating the data.
-        transaction.oncomplete = function(event){
-          console.log('The most recent submited transaction has been saved into indexDb awaiting an internet connection!')
-        }
-        transaction.onerror = function(event){
-          console.log(event)
-        } 
-        //Although we currently only have one object store we have to still have to create an instance calling the object store.
-        const objectStore = transaction.objectStore('savedTransactions')
+  //This is where any options for the db is implemented
+  request.onupgradeneeded = event => {
+    const db = event.target.result
+    db.createObjectStore('savedTransactions', {
+      keyPath: 'id', autoIncrement: true,
+    })
+  }
 
-            const addRequest = objectStore.add(newTransaction)
-            addRequest.onsuccess = event => console.log(`${newTransaction.name} was added to indexDB`)
+  request.onsuccess = event => {
+      db = event.target.result
+      //If a successful DOM event occurs then we want to access or objectStore via our db object so then we can start adding and deleting data.
+      let transaction = db.transaction('savedTransactions', "readwrite")
+      // You can access multiple objectStores in one transaction but since we are only worried about storing the transactions for one use we will just use one instead of passing multiple through using an array like they do in the indexDB documentation. 
+      //We dont have to pass anything through the second parameter but if we dont then it will default to a read only transaciton which would prevent us from manipulating the data.
+      transaction.oncomplete = function(event){
+        console.log('The most recent submited transaction has been saved into indexDb awaiting an internet connection!')
+      }
+      transaction.onerror = function(event){
+        console.log(event)
+      } 
+      //Although we currently only have one object store we have to still have to create an instance calling the object store.
+      const objectStore = transaction.objectStore('savedTransactions')
 
-    }
+          const addRequest = objectStore.add(newTransaction)
+          addRequest.onsuccess = event => console.log(`${newTransaction.name} was added to indexDB`)
+
+  }
+  }
+
 
     
 }
@@ -206,3 +215,7 @@ document.querySelector("#add-btn").onclick = function() {
 document.querySelector("#sub-btn").onclick = function() {
   sendTransaction(false);
 };
+//Check to see if we are online
+// If we are then check indexdb
+//Query and get all info from index db and for each result post to database
+//Clear out indexdb
