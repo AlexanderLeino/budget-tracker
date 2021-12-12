@@ -206,6 +206,12 @@ if(!window.indexedDB) {
     
 }
 
+function checkIndexDb(){
+  if(navigator.onLine){
+    console.log('Checking IndexDB')
+  }
+  return
+}
 
 
 document.querySelector("#add-btn").onclick = function() {
@@ -219,3 +225,4 @@ document.querySelector("#sub-btn").onclick = function() {
 // If we are then check indexdb
 //Query and get all info from index db and for each result post to database
 //Clear out indexdb
+ checkIndexDb()
