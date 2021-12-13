@@ -234,7 +234,7 @@ function checkIndexDb(){
         })
       }
     }
-  clearIndexDb()}
+    clearIndexDb()}
   return
 }
 
