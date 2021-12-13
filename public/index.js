@@ -228,13 +228,15 @@ function checkIndexDb(){
             }
           })
           .then(response => {
-                
+            
             return response.json();
           })
         })
       }
     }
-    clearIndexDb()}
+    clearIndexDb()
+  }
+  
   return
 }
 
@@ -246,6 +248,7 @@ function clearIndexDb() {
     let objectStore = transaction.objectStore('savedTransactions')
     const deleteRequest = objectStore.clear()
   }
+  location.reload()
 }
 
 document.querySelector("#add-btn").onclick = function() {
