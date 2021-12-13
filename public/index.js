@@ -2,7 +2,13 @@
 let transactions = [];
 let myChart;
 let db
-let request
+let request = window.indexedDB.open('offlineLedger', 1)
+request.onupgradeneeded = event => {
+  const db = event.target.result
+  db.createObjectStore('savedTransactions', {
+    keyPath: 'id', autoIncrement: true,
+  })
+}
 
 let newTransaction 
 //Inorder for us to be able to insert multiple transactions into the db after being in offline we need to be able to store each value. In order for us to do that we would need to store them into an array. 
