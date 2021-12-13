@@ -216,22 +216,29 @@ function checkIndexDb(){
       let transaction = db.transaction('savedTransactions', 'readwrite')
       let objectStore = transaction.objectStore("savedTransactions")
       const getRequest = objectStore.getAll()
+      
       getRequest.onsuccess = event => {
+        
         let result = event.target.result
-        result.forEach(transaction => {
-          fetch("/api/transaction", {
-            method: "POST",
-            body: JSON.stringify(transaction),
-            headers: {
-              Accept: "application/json, text/plain, */*",
-              "Content-Type": "application/json"
-            }
+        if(result.length <= 0){
+          return
+        } else {
+          result.forEach(transaction => {
+            fetch("/api/transaction", {
+              method: "POST",
+              body: JSON.stringify(transaction),
+              headers: {
+                Accept: "application/json, text/plain, */*",
+                "Content-Type": "application/json"
+              }
+            })
+            .then(response => {
+              return response.json();
+            })
           })
-          .then(response => {
-            
-            return response.json();
-          })
-        })
+          location.reload()
+
+        }
       }
     }
     clearIndexDb()
@@ -247,8 +254,8 @@ function clearIndexDb() {
     let transaction = db.transaction('savedTransactions', 'readwrite')
     let objectStore = transaction.objectStore('savedTransactions')
     const deleteRequest = objectStore.clear()
+
   }
-  location.reload()
 }
 
 document.querySelector("#add-btn").onclick = function() {
