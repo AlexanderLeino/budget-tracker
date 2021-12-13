@@ -208,18 +208,31 @@ if(!window.indexedDB) {
 
 function checkIndexDb(){
   if(navigator.onLine){
-    console.log('Check indexDB')
+    
     let request = window.indexedDB.open('offlineLedger', 1)
-    console.log(request)
-    request.onerror = function (event){
-      console.log(event)
-    }
+    
     request.onsuccess = function(event){
       db = event.target.result
       let transaction = db.transaction('savedTransactions', 'readwrite')
       let objectStore = transaction.objectStore("savedTransactions")
       const getRequest = objectStore.getAll()
-      getRequest.onsuccess = event => console.log(event.target.result)
+      getRequest.onsuccess = event => {
+        let result = event.target.result
+        result.forEach(transaction => {
+          fetch("/api/transaction", {
+            method: "POST",
+            body: JSON.stringify(transaction),
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              "Content-Type": "application/json"
+            }
+          })
+          .then(response => {
+                
+            return response.json();
+          })
+        })
+      }
     }
   }
   return
