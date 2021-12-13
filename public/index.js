@@ -234,10 +234,19 @@ function checkIndexDb(){
         })
       }
     }
-  }
+  clearIndexDb()}
   return
 }
 
+function clearIndexDb() {
+  let request = window.indexedDB.open('offlineLedger', 1)
+  request.onsuccess = function(event){
+    db = event.target.result
+    let transaction = db.transaction('savedTransactions', 'readwrite')
+    let objectStore = transaction.objectStore('savedTransactions')
+    const deleteRequest = objectStore.clear()
+  }
+}
 
 document.querySelector("#add-btn").onclick = function() {
   sendTransaction(true);
