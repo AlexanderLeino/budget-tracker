@@ -200,13 +200,12 @@ if(!window.indexedDB) {
           addRequest.onsuccess = event => console.log(`${newTransaction.name} was added to indexDB`)
 
   }
-  }
-
-
-    
+  }  
 }
 
-
+function checkIndexDb() {
+  console.log('Lets Check IndexDb')
+}
 
 document.querySelector("#add-btn").onclick = function() {
   sendTransaction(true);
